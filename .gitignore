@@ -6,3 +6,5 @@ playwright-report
 .env.local
 *.log
 .DS_Store
+.vercel
+.env*
