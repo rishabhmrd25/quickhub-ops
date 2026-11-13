@@ -59,6 +59,24 @@ describe('auth', () => {
   });
 });
 
+describe('cors', () => {
+  async function allowedOrigin(corsEnv: string, origin: string) {
+    process.env.CORS_ORIGIN = corsEnv;
+    const s = createServer(createApp(new Store({ orderCount: 1 })));
+    delete process.env.CORS_ORIGIN;
+    await new Promise<void>((r) => s.listen(0, r));
+    const res = await fetch(`http://localhost:${(s.address() as AddressInfo).port}/api/health`, { headers: { Origin: origin } });
+    s.close();
+    return res.headers.get('access-control-allow-origin');
+  }
+
+  it('allows only listed origins, and treats a blank value as unset', async () => {
+    expect(await allowedOrigin('https://a.dev, https://b.dev', 'https://b.dev')).toBe('https://b.dev');
+    expect(await allowedOrigin('https://a.dev', 'https://evil.dev')).toBeNull();
+    expect(await allowedOrigin('', 'https://any.dev')).toBe('https://any.dev');
+  });
+});
+
 describe('role-based access', () => {
   it('viewer cannot change status, assign, create or adjust stock', async () => {
     const [order] = await firstWithStatus('picking');

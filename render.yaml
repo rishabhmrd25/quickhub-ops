@@ -1,0 +1,19 @@
+# Render blueprint for the API + WebSocket server (Dashboard → New → Blueprint).
+services:
+  - type: web
+    name: quickhub-ops-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run start -w @quickhub/server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: TOKEN_SECRET
+        generateValue: true
+      - key: LATENCY_MS
+        value: "0"
+      # Set to the Vercel URL once the web app is deployed. Blank = allow any origin.
+      - key: CORS_ORIGIN
+        sync: false
