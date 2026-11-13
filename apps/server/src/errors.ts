@@ -1,5 +1,5 @@
 import type { ApiErrorBody } from '@quickhub/shared';
-import type { ZodType, ZodTypeDef } from 'zod';
+import type { ZodType } from 'zod';
 
 type Code = ApiErrorBody['error']['code'];
 type Extras = Omit<ApiErrorBody['error'], 'code' | 'message'>;
@@ -21,7 +21,7 @@ export class ApiError extends Error {
 }
 
 /** Validate a request body. On failure, reply 400 with one message per field. */
-export function parse<T>(schema: ZodType<T, ZodTypeDef, unknown>, data: unknown): T {
+export function parse<T>(schema: ZodType<T, unknown>, data: unknown): T {
   const result = schema.safeParse(data);
   if (result.success) return result.data;
   const fields: Record<string, string> = {};
