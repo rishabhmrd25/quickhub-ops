@@ -108,11 +108,14 @@ export const isLate = (o: Pick<Order, 'status' | 'promisedBy'>, now = Date.now()
 export interface OrderFilter {
   status?: OrderStatus;
   q?: string;
+  /** Only open orders past their promise time. */
+  late?: boolean;
 }
 
 /** Does this order belong in a list with this filter? Same rule on server and client. */
-export function matchesOrderFilter(order: Order, filter: OrderFilter): boolean {
+export function matchesOrderFilter(order: Order, filter: OrderFilter, now = Date.now()): boolean {
   if (filter.status && order.status !== filter.status) return false;
+  if (filter.late && !isLate(order, now)) return false;
   const q = filter.q?.trim().toLowerCase();
   if (!q) return true;
   return (

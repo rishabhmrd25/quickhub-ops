@@ -18,6 +18,7 @@ import type { Store } from './store';
 const listQuerySchema = z.object({
   status: z.enum(ORDER_STATUSES).optional(),
   q: z.string().max(60).optional(),
+  late: z.enum(['true', 'false']).optional(),
   cursor: z.string().max(60).optional(),
   limit: z.coerce.number().int().min(1).max(500).default(200),
 });
@@ -65,7 +66,7 @@ export function createApp(store: Store, opts: { latencyMs?: number } = {}) {
 
   app.get('/api/orders', requirePermission('orders:read'), (req, res) => {
     const query = parse(listQuerySchema, req.query);
-    res.json(store.listOrders({ ...query, pickerId: scopeOf(req) }));
+    res.json(store.listOrders({ ...query, late: query.late === 'true', pickerId: scopeOf(req) }));
   });
 
   app.get('/api/stats', requirePermission('orders:read'), (req, res) => {

@@ -28,6 +28,7 @@ export type StoreEvent =
 export interface ListOrdersQuery {
   status?: OrderStatus;
   q?: string;
+  late?: boolean;
   cursor?: string;
   limit: number;
   /** When set, only orders assigned to this picker are returned. */
@@ -176,7 +177,7 @@ export class Store {
   /* ----------------------------- orders ----------------------------- */
 
   listOrders(query: ListOrdersQuery): OrdersPage {
-    const filter = { status: query.status, q: query.q };
+    const filter = { status: query.status, q: query.q, late: query.late };
     let after: { createdAt: number; id: string } | null = null;
     if (query.cursor) {
       const [ts, id] = query.cursor.split('_');

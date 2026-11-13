@@ -6,6 +6,8 @@ import {
   checkTransition,
   createOrderSchema,
   isLate,
+  matchesOrderFilter,
+  type Order,
   type User,
 } from './index';
 
@@ -74,6 +76,14 @@ describe('helpers and schemas', () => {
     expect(isLate({ status: 'picking', promisedBy: 100 }, 200)).toBe(true);
     expect(isLate({ status: 'delivered', promisedBy: 100 }, 200)).toBe(false);
     expect(isLate({ status: 'picking', promisedBy: 300 }, 200)).toBe(false);
+  });
+
+  it('late filter keeps only open orders past their promise time', () => {
+    const o = { id: 'ORD-1', customerName: 'Asha', phone: '9876543210', status: 'picking', promisedBy: 100 } as Order;
+    expect(matchesOrderFilter(o, { late: true }, 200)).toBe(true);
+    expect(matchesOrderFilter(o, { late: true }, 50)).toBe(false);
+    expect(matchesOrderFilter({ ...o, status: 'delivered' }, { late: true }, 200)).toBe(false);
+    expect(matchesOrderFilter(o, { late: true, status: 'packed' }, 200)).toBe(false);
   });
 
   it('validates a new order', () => {

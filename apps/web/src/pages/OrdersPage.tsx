@@ -15,6 +15,7 @@ export default function OrdersPage() {
   const rawStatus = params.get('status');
   const status = isStatus(rawStatus) ? rawStatus : undefined;
   const q = params.get('q') ?? '';
+  const late = params.get('late') === 'true';
 
   const [search, setSearch] = useState(q);
   const debounced = useDebouncedValue(search.trim(), 300);
@@ -33,7 +34,10 @@ export default function OrdersPage() {
     );
   }, [debounced, q, setParams]);
 
-  const filter = useMemo<OrderFilter>(() => ({ ...(status ? { status } : {}), ...(q ? { q } : {}) }), [status, q]);
+  const filter = useMemo<OrderFilter>(
+    () => ({ ...(status ? { status } : {}), ...(q ? { q } : {}), ...(late ? { late } : {}) }),
+    [status, q, late],
+  );
   const stats = useStats();
 
   const setStatus = (next?: OrderStatus) =>
@@ -41,6 +45,14 @@ export default function OrdersPage() {
       const p = new URLSearchParams(prev);
       if (next) p.set('status', next);
       else p.delete('status');
+      return p;
+    });
+
+  const toggleLate = () =>
+    setParams((prev) => {
+      const p = new URLSearchParams(prev);
+      if (late) p.delete('late');
+      else p.set('late', 'true');
       return p;
     });
 
@@ -61,11 +73,9 @@ export default function OrdersPage() {
           ))}
         </div>
         <div className="toolbar-right">
-          {stats.data && stats.data.late > 0 && (
-            <span className="late-count" title="Open orders past their promised time">
-              {count(stats.data.late)} late
-            </span>
-          )}
+          <button className="chip late-count" aria-pressed={late} title="Open orders past their promised time" onClick={toggleLate}>
+            Late only {stats.data && <b>{count(stats.data.late)}</b>}
+          </button>
           <input
             type="search"
             className="search"

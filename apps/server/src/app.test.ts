@@ -97,6 +97,17 @@ describe('orders', () => {
     expect(p1.body.total).toBe(400);
   });
 
+  it('late=true returns only open orders past their promise time', async () => {
+    const res = await api<OrdersPage>('/api/orders?late=true', { as: 'manager' });
+    expect(res.body.total).toBeGreaterThan(0);
+    expect(res.body.total).toBe(store.stats().late);
+    const now = Date.now();
+    for (const o of res.body.items) {
+      expect(['delivered', 'cancelled']).not.toContain(o.status);
+      expect(o.promisedBy).toBeLessThan(now);
+    }
+  });
+
   it('rejects a stale version with 409 and returns the latest copy', async () => {
     const order = (await firstWithStatus('picking')).find((o) => o.pickerId !== 'p-1')!;
     const ok = await api<Order>(`/api/orders/${order.id}/status`, { as: 'manager', method: 'PATCH', body: { status: 'packed', version: order.version } });

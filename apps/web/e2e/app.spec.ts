@@ -113,6 +113,24 @@ test.describe('orders table', () => {
     await page.getByLabel('Search orders').fill('zzzz-no-such-order');
     await expect(page.getByText('No orders match this filter.')).toBeVisible();
   });
+
+  test('"Late only" shows just late orders and is kept in the URL', async ({ page }) => {
+    await login(page, 'manager');
+    const chip = page.getByRole('button', { name: /^Late only/ });
+    const lateCount = (await chip.locator('b').textContent())!;
+
+    await chip.click();
+    await expect(chip).toHaveAttribute('aria-pressed', 'true');
+    await expect(page).toHaveURL(/late=true/);
+    await expect(page.getByTestId('order-count')).toHaveText(`${lateCount} orders`);
+    await expect(rows(page).first()).toContainText('Late');
+
+    await page.reload();
+    await expect(page.getByRole('button', { name: /^Late only/ })).toHaveAttribute('aria-pressed', 'true');
+
+    await page.getByRole('button', { name: /^Late only/ }).click();
+    await expect(page).not.toHaveURL(/late=true/);
+  });
 });
 
 test.describe('live updates', () => {

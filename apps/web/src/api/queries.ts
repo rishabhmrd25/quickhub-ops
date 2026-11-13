@@ -47,6 +47,7 @@ export function useOrders(filter: OrderFilter) {
       const params = new URLSearchParams({ limit: String(PAGE_SIZE) });
       if (filter.status) params.set('status', filter.status);
       if (filter.q) params.set('q', filter.q);
+      if (filter.late) params.set('late', 'true');
       if (pageParam) params.set('cursor', pageParam);
       return api<OrdersPage>(`/api/orders?${params}`, { signal });
     },
@@ -56,6 +57,8 @@ export function useOrders(filter: OrderFilter) {
     // every page on window focus. A reconnect/gap triggers an explicit refetch.
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
+    // Orders turn late as time passes, with no server event, so poll this list.
+    refetchInterval: filter.late ? 30_000 : false,
   });
 }
 
