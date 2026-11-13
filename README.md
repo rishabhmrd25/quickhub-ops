@@ -82,6 +82,18 @@ docs/WALKTHROUGH.md  Suggested reading order, with questions to test your unders
 | `VITE_API_URL` | web | (same origin) | API base URL when web and server are deployed separately |
 | `VITE_SENTRY_DSN` | web | (off) | Turns on error reporting |
 
+## Deploy
+
+| Part | Host | Config |
+|---|---|---|
+| API + WebSocket server | Render (free web service) | [`render.yaml`](render.yaml) blueprint |
+| Web app | Vercel | [`vercel.json`](vercel.json): installs at the repo root, builds `@quickhub/web`, rewrites every route to `index.html` so deep links like `/orders/ORD-1` survive a refresh |
+
+Set `VITE_API_URL` on Vercel to the Render URL (the WebSocket URL is derived from it, `https` → `wss`),
+and `CORS_ORIGIN` on Render to the Vercel URL.
+
+> The free Render server sleeps after about 15 minutes without traffic, so the first load after a quiet spell can take 30–60 seconds. Data also resets when it wakes up.
+
 ## Known limits
 
 - Data is in memory and resets when the server restarts.
