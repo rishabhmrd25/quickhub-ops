@@ -31,7 +31,9 @@ const inventoryQuerySchema = z.object({
 export function createApp(store: Store, opts: { latencyMs?: number } = {}) {
   const app = express();
   app.disable('x-powered-by');
-  app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') ?? true }));
+  // An empty CORS_ORIGIN (e.g. a blank dashboard field) means "not set", not "allow nobody".
+  const corsOrigin = process.env.CORS_ORIGIN?.trim();
+  app.use(cors({ origin: corsOrigin ? corsOrigin.split(',').map((o) => o.trim()) : true }));
   app.use(express.json({ limit: '100kb' }));
 
   // Fake network delay so loading states and optimistic updates are visible locally.
